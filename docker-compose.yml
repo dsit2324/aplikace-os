@@ -1,0 +1,59 @@
+version: '3.8'
+
+services:
+  pocketbase:
+  image: ghcr.io/pocketbase/pocketbase:latest
+    container_name: pocketbase
+    restart: unless-stopped
+    ports:
+      - "8090:8090"
+    volumes:
+      - ./pb_data:/pb_data
+      - ./pb_migrations:/pb_migrations
+      - ./pb_hooks:/pb_hooks
+    command: ["serve", "--http=0.0.0.0:8090"]
+
+  version: '3.8'
+
+  services:
+    pocketbase:
+      image: ghcr.io/pocketbase/pocketbase:latest
+      container_name: pocketbase
+      restart: unless-stopped
+      ports:
+        - "8090:8090"
+      volumes:
+        - ./pb_data:/pb_data
+        - ./pb_migrations:/pb_migrations
+        - ./pb_hooks:/pb_hooks
+      command: ["serve", "--http=0.0.0.0:8090"]
+
+    db:
+      image: postgres:15
+      container_name: postgres_db
+      restart: unless-stopped
+      environment:
+        POSTGRES_USER: postgres
+        POSTGRES_PASSWORD: password
+        POSTGRES_DB: postgres
+      volumes:
+        - ./pgdata:/var/lib/postgresql/data
+
+    web:
+      build:
+        context: ./pocketbase-docker/app
+        dockerfile: Dockerfile
+      container_name: flask_web
+      restart: unless-stopped
+      depends_on:
+        - db
+        - pocketbase
+      ports:
+        - "8000:8000"
+      environment:
+        DATABASE_URL: postgresql://postgres:password@db:5432/postgres
+        POCKETBASE_URL: http://pocketbase:8090
+        POCKETBASE_ADMIN_EMAIL: admin@example.com
+        POCKETBASE_ADMIN_PASSWORD: password
+      volumes:
+        - ./pocketbase-docker/app:/app

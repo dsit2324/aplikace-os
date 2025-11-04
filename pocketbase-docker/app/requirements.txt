@@ -1,0 +1,6 @@
+Flask==2.2.5
+Flask-SQLAlchemy==3.0.3
+psycopg2-binary==2.9.10
+gunicorn==20.1.0
+SQLAlchemy==1.4.49
+flask-pocket==1.0.2
